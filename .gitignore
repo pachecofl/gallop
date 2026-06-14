@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Vercel
+.vercel/
+
+# OS / editor
+.DS_Store
+*.log
+
+# Local tooling (Claude Code preview/launch config)
+.claude/

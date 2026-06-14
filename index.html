@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GALLOP! — Horse Betting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ HEADER ============ -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">🏇</span>
+        <h1>GALLOP<span class="brand-bang">!</span></h1>
+        <span class="brand-tag">place your bets</span>
+      </div>
+      <div class="topbar-right">
+        <div class="highscore">
+          <span class="hs-label">Best run</span>
+          <span class="hs-value" id="highScore">$500</span>
+        </div>
+        <button class="icon-btn" id="soundToggle" title="Toggle sound" aria-label="Toggle sound">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button class="icon-btn" id="helpToggle" title="How to play" aria-label="How to play">?</button>
+      </div>
+    </header>
+
+    <!-- ============ MAIN GRID ============ -->
+    <main class="layout">
+
+      <!-- ---- HORSES RAIL ---- -->
+      <section class="panel horses-panel" aria-label="Horses">
+        <div class="panel-head">
+          <h2>Horses</h2>
+          <span class="panel-sub" id="horsesSub">The field today</span>
+        </div>
+        <div class="panel-body horses-list" id="horsesList"><!-- horse cards --></div>
+      </section>
+
+      <!-- ---- CENTER COLUMN ---- -->
+      <div class="center-col">
+
+        <!-- BETTING -->
+        <section class="panel betting-panel" aria-label="Betting">
+          <div class="panel-head">
+            <h2>Betting</h2>
+            <span class="panel-sub" id="bettingSub">Pick a horse, pick a bet</span>
+          </div>
+          <div class="panel-body betting-body">
+            <div class="bet-grid" id="betGrid"><!-- 10 selectable horses --></div>
+
+            <div class="bet-controls">
+              <div class="control-block">
+                <label class="control-label">Bet type</label>
+                <div class="bet-types" id="betTypes">
+                  <button class="bet-type" data-type="win"   data-frac="1/1">
+                    <span class="bt-name">Win</span><span class="bt-desc">1st · full odds</span>
+                  </button>
+                  <button class="bet-type" data-type="place" data-frac="1/4">
+                    <span class="bt-name">Place</span><span class="bt-desc">1st–2nd · ¼ odds</span>
+                  </button>
+                  <button class="bet-type" data-type="show"  data-frac="1/5">
+                    <span class="bt-name">Show</span><span class="bt-desc">1st–3rd · ⅕ odds</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="control-block">
+                <label class="control-label">Stake</label>
+                <div class="stake-row">
+                  <div class="stake-input">
+                    <span class="stake-cur">$</span>
+                    <input type="number" id="stakeInput" min="1" step="1" value="10" inputmode="numeric" />
+                  </div>
+                  <div class="chips" id="chips">
+                    <button class="chip" data-amt="5">+5</button>
+                    <button class="chip" data-amt="25">+25</button>
+                    <button class="chip" data-amt="100">+100</button>
+                    <button class="chip chip-max" data-amt="max">All in</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bet-summary" id="betSummary">
+              <div class="summary-line sel-line">
+                <span class="sum-label">Selection</span>
+                <span class="sum-value" id="sumSelection">—</span>
+              </div>
+              <div class="summary-line ret-line">
+                <span class="sum-label">To return</span>
+                <span class="sum-value win" id="sumReturn">$0</span>
+              </div>
+              <button class="bet-btn" id="betBtn" disabled>Place bet</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRACK -->
+        <section class="panel track-panel" aria-label="Track">
+          <div class="panel-head">
+            <h2>Track</h2>
+            <span class="panel-sub" id="trackSub">Awaiting the off…</span>
+          </div>
+          <div class="panel-body track-body">
+            <div class="track" id="track">
+              <div class="track-sky" id="trackSky"></div>
+              <div class="track-stand"><div class="crowd" id="crowd"></div></div>
+              <div class="weather-fx" id="weatherFx"></div>
+              <div class="lanes" id="lanes"><!-- lanes + horses --></div>
+              <div class="finish-pole" id="finishPole"><span class="flag">🏁</span></div>
+              <div class="track-overlay" id="trackOverlay">
+                <div class="overlay-inner" id="overlayInner"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ---- RIGHT COLUMN ---- -->
+      <div class="side-col">
+        <section class="panel wallet-panel" aria-label="Wallet">
+          <div class="panel-head"><h2>Wallet</h2></div>
+          <div class="panel-body wallet-body">
+            <div class="balance">
+              <span class="balance-label">Balance</span>
+              <span class="balance-value" id="balance">$500</span>
+            </div>
+            <div class="wallet-stats">
+              <div class="wstat">
+                <span class="wstat-label">Gains</span>
+                <span class="wstat-value gain" id="gains">$0</span>
+              </div>
+              <div class="wstat">
+                <span class="wstat-label">Lost</span>
+                <span class="wstat-value loss" id="lost">$0</span>
+              </div>
+              <div class="wstat">
+                <span class="wstat-label">Races</span>
+                <span class="wstat-value" id="races">0</span>
+              </div>
+              <div class="wstat">
+                <span class="wstat-label">Streak</span>
+                <span class="wstat-value" id="streak">0 🔥</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel weather-panel" aria-label="Weather">
+          <div class="panel-head"><h2>Weather</h2></div>
+          <div class="panel-body weather-body" id="weatherBody">
+            <div class="weather-icon" id="weatherIcon">☀️</div>
+            <div class="weather-text">
+              <div class="weather-name" id="weatherName">Sunny</div>
+              <div class="weather-note" id="weatherNote">Fast going. Sun-lovers thrive.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Help modal -->
+  <div class="modal-scrim" id="helpModal" hidden>
+    <div class="modal">
+      <button class="modal-close" id="helpClose" aria-label="Close">×</button>
+      <h2 class="modal-title">How to play GALLOP!</h2>
+      <ol class="help-list">
+        <li><b>Read the field.</b> Each horse shows speed, stamina, age and a weather preference. Stamina and form change every race.</li>
+        <li><b>Mind the weather.</b> It's revealed before you bet and favours horses that love those conditions.</li>
+        <li><b>Place one bet.</b> Pick a horse, a bet type, and a stake — then lock it in.</li>
+        <li><b>Bet types.</b> <b>Win</b> = 1st (full odds). <b>Place</b> = top 2 (¼ odds). <b>Show</b> = top 3 (⅕ odds).</li>
+        <li><b>Survive.</b> The game ends when your balance hits $0. Chase the highest balance you can reach.</li>
+      </ol>
+      <p class="help-foot">No real money — just bragging rights. Good luck out there.</p>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
