@@ -511,3 +511,10 @@ body {
   .horses-panel { grid-row: auto; max-height: 360px; }
   .track-panel { min-height: 420px; }
 }
+
+@media (max-width: 600px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+  .brand { flex: 1 1 100%; }
+  .brand-tag { display: none; }
+  .topbar-right { flex: 1 1 100%; justify-content: flex-start; }
+}
