@@ -39,6 +39,7 @@ body {
     var(--bg);
   color: var(--txt);
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   overflow: hidden;
 }
 
@@ -464,6 +465,7 @@ body {
 .news-text {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 13px; line-height: 1.4; color: var(--txt); font-weight: 500;
+  overflow-wrap: break-word;
 }
 .news-link {
   color: var(--accent-2); font-weight: 700; cursor: pointer;
@@ -503,18 +505,82 @@ body {
 ::-webkit-scrollbar-thumb { background: #2c3a55; border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ---------------- Responsive guard ---------------- */
-@media (max-width: 1180px) {
-  body { overflow: auto; }
-  .app { height: auto; min-height: 100vh; }
-  .layout { grid-template-columns: 1fr; }
-  .horses-panel { grid-row: auto; max-height: 360px; }
-  .track-panel { min-height: 420px; }
+/* ============================================================
+   RESPONSIVE  —  desktop ≥1024 · tablet 640–1023 · mobile ≤639
+   Breakpoints chosen to align with common device widths
+   (iPad portrait 768, landscape 1024, phones ≤640).
+   ============================================================ */
+
+/* --- Desktop comfort: narrow the side rails on smaller laptops --- */
+@media (max-width: 1180px) and (min-width: 1024px) {
+  .layout { grid-template-columns: 284px 1fr 244px; }
 }
 
-@media (max-width: 600px) {
-  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+/* --- TABLET: 640–1023px → two columns ---
+   Left rail keeps reference/status (horses, wallet, news);
+   right column holds the action (betting + track). --- */
+@media (min-width: 640px) and (max-width: 1023px) {
+  body { overflow: auto; }
+  .app { height: auto; min-height: 100vh; min-height: 100svh; padding: 12px; }
+
+  .layout {
+    grid-template-columns: minmax(260px, 320px) 1fr;
+    align-items: start;
+  }
+  .horses-panel { grid-column: 1; grid-row: 1; max-height: 340px; }
+  .center-col   { grid-column: 2; grid-row: 1 / span 2; }
+  .side-col     { grid-column: 1; grid-row: 2; overflow: visible; }
+
+  .track-panel  { min-height: 440px; }
+
+  /* Betting grid flows to fit the column width */
+  .bet-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+/* --- MOBILE: ≤639px → single column --- */
+@media (max-width: 639px) {
+  body { overflow: auto; }
+  .app { height: auto; min-height: 100vh; min-height: 100svh; padding: 10px; gap: 10px; }
+
+  .layout { grid-template-columns: 1fr; gap: 10px; }
+  .horses-panel { grid-row: auto; max-height: 340px; }
+  .side-col { overflow: visible; padding-right: 0; }
+  .track-panel { min-height: 360px; }
+
+  /* Betting: fluid grid + stacked controls */
+  .bet-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .bet-controls { grid-template-columns: 1fr; gap: 14px; }
+  .bet-summary { grid-template-columns: 1fr; gap: 12px; text-align: left; }
+  .bet-summary .bet-btn { width: 100%; }
+
+  /* Bigger touch targets (≥44px) */
+  .icon-btn { width: 44px; height: 44px; }
+  .chip { padding: 10px 4px; }
+
+  /* Tighter panel padding to reclaim space */
+  .panel-body { padding: 12px; }
+  .news-body, .wallet-body { padding: 12px; }
+
+  /* Result overlay fits narrow screens */
+  .overlay-inner { padding: 18px 14px; }
+  .ov-results { min-width: 0; width: 100%; }
+  .ov-results li {
+    grid-template-columns: 26px 12px 1fr auto; gap: 8px;
+    padding: 5px 8px; font-size: 12.5px;
+  }
+  .ov-amount { font-size: 30px; }
+  .ov-title { font-size: 22px; }
+
+  /* Modal padding */
+  .modal { padding: 22px 20px; }
+  .modal-title { font-size: 18px; }
+}
+
+/* --- Small phones: ≤560px → wrap the topbar onto two rows --- */
+@media (max-width: 560px) {
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 8px 6px; }
   .brand { flex: 1 1 100%; }
   .brand-tag { display: none; }
   .topbar-right { flex: 1 1 100%; justify-content: flex-start; }
+  .brand h1 { font-size: 26px; }
 }
