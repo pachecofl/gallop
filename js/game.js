@@ -15,9 +15,40 @@
   const WEATHERS = {
     sunny: { name: 'Sunny',  icon: '☀️', note: 'Fast going. Sun-lovers thrive.' },
     rainy: { name: 'Rainy',  icon: '🌧️', note: 'Heavy ground. Mudlarks step up.' },
-    windy: { name: 'Windy',  icon: '🌬️', note: 'Gusty straight. Wind-runners shine.' },
+    windy: { name: 'Windy',  icon: '💨', note: 'Gusty straight. Wind-runners shine.' },
   };
   const WEATHER_KEYS = Object.keys(WEATHERS);
+
+  // The Gallop Gazette — pre-written headlines. {h} = horse name.
+  // `effect` is a one-race score modifier (NOT priced into the odds). tone drives the badge.
+  const NEWS = [
+    // ---- good form ----
+    { tone: 'good', effect:  0.16, text: '{h} lands a major new sponsor — the yard is buzzing.' },
+    { tone: 'good', effect:  0.18, text: '{h} smashed the clock in track work this morning.' },
+    { tone: 'good', effect:  0.12, text: '{h} returns from a relaxing spell looking a picture.' },
+    { tone: 'good', effect:  0.15, text: 'Champion jockey takes the ride on {h} today.' },
+    { tone: 'good', effect:  0.10, text: 'Trainer says {h} has never looked better at home.' },
+    { tone: 'good', effect:  0.13, text: '{h} fitted with first-time blinkers — sharp as a tack.' },
+    { tone: 'good', effect:  0.11, text: 'Whispers of a big stable gamble on {h}.' },
+    { tone: 'good', effect:  0.09, text: '{h} drew the dream low number against the rail.' },
+    { tone: 'good', effect:  0.12, text: '{h} has been gobbling up its feed all week.' },
+    { tone: 'good', effect:  0.14, text: '{h} bred for exactly today’s conditions, says the team.' },
+    { tone: 'good', effect:  0.10, text: '{h} shed weight over the break and looks razor sharp.' },
+    { tone: 'good', effect:  0.13, text: 'Glowing gallop report has punters piling onto {h}.' },
+    // ---- doubts / setbacks ----
+    { tone: 'bad',  effect: -0.16, text: '{h} reported sore after a recent knock.' },
+    { tone: 'bad',  effect: -0.15, text: '{h} missed two days of work with a temperature.' },
+    { tone: 'bad',  effect: -0.12, text: '{h} looked agitated and sweaty in the parade ring.' },
+    { tone: 'bad',  effect: -0.13, text: 'Regular jockey is out injured; a stand-in rides {h}.' },
+    { tone: 'bad',  effect: -0.18, text: '{h} was struck into last time and carries a niggle.' },
+    { tone: 'bad',  effect: -0.10, text: '{h} hasn’t pleased in its homework lately.' },
+    { tone: 'bad',  effect: -0.09, text: '{h} drew the worst of it out wide.' },
+    { tone: 'bad',  effect: -0.13, text: '{h} has been off its feed this week.' },
+    { tone: 'bad',  effect: -0.16, text: 'Vets gave {h} only a borderline pass this morning.' },
+    { tone: 'bad',  effect: -0.11, text: '{h} looks flat after a hard race last time out.' },
+    { tone: 'bad',  effect: -0.10, text: 'Connections of {h} sound less than confident.' },
+    { tone: 'bad',  effect: -0.14, text: '{h} got loose before the off and burned energy.' },
+  ];
 
   /* Coat palette: [coat, mane, label] */
   const COATS = [
@@ -85,15 +116,17 @@
     return 2 - Math.abs(age - 5) * 0.45;
   }
   function weatherBonus(horse, weather) {
-    return horse.weatherPref === weather ? 2 : 0;
+    return horse.weatherPrefs.includes(weather) ? 2 : 0;
   }
   // visible expected score (no hidden condition) — drives the odds
   function rawScore(h, weather) {
     return h.speed * 2 + h.stamina * 1.5 + ageModifier(h.age) + weatherBonus(h, weather);
   }
-  // true score for THIS race, including the hidden "day" factor
+  // true score for THIS race: visible form × (hidden "day" factor + today's news).
+  // News IS public (shown in the paper) but is deliberately NOT priced into the odds,
+  // so reading the paper gives the player a real edge.
   function finalScore(h, weather) {
-    return rawScore(h, weather) * (1 + h.condition);
+    return rawScore(h, weather) * (1 + h.condition + (h.newsEffect || 0));
   }
 
   function computeOdds(stable, weather) {
@@ -118,7 +151,7 @@
       coatName: coats[i][2],
       speed: rint(1, 5),                 // fixed for the stable's life
       age: rint(2, 12),                  // fixed
-      weatherPref: pick(WEATHER_KEYS),   // fixed
+      weatherPrefs: shuffle(WEATHER_KEYS).slice(0, 2), // fixed set of 2 favoured conditions
       stamina: rint(1, 5),               // re-rolled each race
       condition: 0,                      // hidden, re-rolled each race
       odds: 5,
@@ -131,8 +164,20 @@
     S.stable.forEach((h) => {
       h.stamina = rint(1, 5);
       h.condition = rfloat(-0.15, 0.15);
+      h.newsEffect = 0;
     });
-    computeOdds(S.stable, S.weather);
+
+    // Today's headlines: 1–2 stories, each on a different random horse.
+    const count = Math.random() < 0.5 ? 1 : 2;
+    const horses = shuffle(S.stable).slice(0, count);
+    const stories = shuffle(NEWS).slice(0, count);
+    S.news = horses.map((h, i) => {
+      const story = stories[i];
+      h.newsEffect = story.effect;
+      return { horseId: h.id, horseName: h.name, tone: story.tone, text: story.text };
+    });
+
+    computeOdds(S.stable, S.weather);   // odds use raw form only — news is the player's edge
   }
 
   /* ---------------- SVG horse ---------------- */
@@ -166,19 +211,22 @@
     list.innerHTML = S.stable.map((h) => {
       const sel = S.sel.horseId === h.id ? ' selected' : '';
       const form = h.lastFinish ? `Last: ${ordinal(h.lastFinish)}` : 'First run';
+      const news = (S.news || []).find((n) => n.horseId === h.id);
+      const newsChip = news
+        ? ` <span class="hc-news-chip ${news.tone}" title="In today's news">${news.tone === 'good' ? '▲' : '▼'}</span>`
+        : '';
       return `
       <div class="horse-card${sel}" data-id="${h.id}">
         <div class="hc-num" style="background:${h.coat};color:${pickText(h.coat)}">${h.id}</div>
         <div class="hc-main">
-          <div class="hc-name">${h.name}</div>
+          <div class="hc-name">${h.name}${newsChip}</div>
           <div class="hc-stats">
-            <div class="stat-row"><span class="stat-key">SPD</span><div class="bar speed"><span style="width:${h.speed/5*100}%"></span></div></div>
-            <div class="stat-row"><span class="stat-key">STA</span><div class="bar stamina"><span style="width:${h.stamina/5*100}%"></span></div></div>
+            <div class="stat-row"><span class="stat-key">Speed</span><div class="bar speed"><span style="width:${h.speed/5*100}%"></span></div></div>
+            <div class="stat-row"><span class="stat-key">Stamina</span><div class="bar stamina"><span style="width:${h.stamina/5*100}%"></span></div></div>
           </div>
           <div class="hc-meta">
             <span>${h.age}yo</span>
-            <span class="pref">${WEATHERS[h.weatherPref].icon} ${WEATHERS[h.weatherPref].name}</span>
-            <span>${h.coatName}</span>
+            <span class="pref">${h.weatherPrefs.map((k) => WEATHERS[k].name).join(' | ')}</span>
           </div>
         </div>
         <div class="hc-right">
@@ -237,6 +285,18 @@
     $('weatherIcon').textContent = w.icon;
     $('weatherName').textContent = w.name;
     $('weatherNote').textContent = w.note;
+
+    const list = $('newsList');
+    if (!list) return;
+    list.innerHTML = (S.news || []).map((n) => {
+      const linked = n.text.replace('{h}',
+        `<a class="news-link" role="link" tabindex="0" data-id="${n.horseId}">${n.horseName}</a>`);
+      return `
+      <div class="news-item ${n.tone}">
+        <span class="news-tag ${n.tone}">${n.tone === 'good' ? '▲ In form' : '▼ Doubt'}</span>
+        <span class="news-text">${linked}</span>
+      </div>`;
+    }).join('') || '<div class="news-empty">A quiet day in the yard — no news.</div>';
   }
 
   /* ---------------- Bet selection / summary ---------------- */
@@ -490,6 +550,15 @@
     const amount = (won ? '+' : '−') + money(Math.abs(delta));
     const peakTag = newPeak ? '<div class="ov-detail">🏆 New best run!</div>' : '';
 
+    const isGameOver = S.balance < MIN_BET;
+    const footer = isGameOver
+      ? `<div class="ov-gameover">
+           <div class="ov-go-title">🐴 Out of cash</div>
+           <div class="ov-detail">You ran ${S.races} race${S.races === 1 ? '' : 's'} · longest streak ${bestStreakNote()}</div>
+           <button class="ov-btn gold" id="restartBtn">Play again</button>
+         </div>`
+      : `<div><button class="ov-btn" id="continueBtn">Continue →</button></div>`;
+
     showOverlay(`
       <div class="ov-emoji">${headEmoji}</div>
       <div class="ov-title ${headClass}">${headTitle}</div>
@@ -500,12 +569,18 @@
         <li class="res-head"><span class="rk">#</span><span></span><span class="hn">Horse</span><span class="od">Odds</span></li>
         ${rows}
       </ul>
-      <div><button class="ov-btn" id="continueBtn">Continue →</button></div>
+      ${footer}
     `);
-    $('continueBtn').addEventListener('click', nextRace);
-    $('bettingSub').textContent = won ? 'Winner — press Continue' : 'Press Continue for the next race';
 
-    if (S.balance < MIN_BET) setTimeout(() => gameOver(), 50);
+    if (isGameOver) {
+      S.phase = 'gameover';
+      lockControls(true);
+      $('restartBtn').addEventListener('click', restart);
+      $('bettingSub').textContent = 'Out of cash — play again?';
+    } else {
+      $('continueBtn').addEventListener('click', nextRace);
+      $('bettingSub').textContent = won ? 'Winner — press Continue' : 'Press Continue for the next race';
+    }
   }
 
   function nextRace() {
@@ -527,18 +602,6 @@
     $('trackSub').textContent = 'Awaiting the off…';
   }
 
-  function gameOver() {
-    S.phase = 'gameover';
-    lockControls(true);
-    showOverlay(`
-      <div class="ov-emoji">🐴</div>
-      <div class="ov-title loss">Out of cash</div>
-      <div class="ov-sub">You ran ${S.races} race${S.races === 1 ? '' : 's'} before the wallet ran dry.</div>
-      <div class="ov-detail">Longest streak ${bestStreakNote()}</div>
-      <div><button class="ov-btn gold" id="restartBtn">Play again</button></div>
-    `);
-    $('restartBtn').addEventListener('click', restart);
-  }
   function bestStreakNote() { return S._bestStreak ? S._bestStreak + ' 🔥' : '0'; }
 
   function restart() {
@@ -673,6 +736,14 @@
     $('betGrid').addEventListener('click', (e) => {
       const cell = e.target.closest('.bet-cell');
       if (cell) setHorse(parseInt(cell.dataset.id, 10));
+    });
+    $('newsList').addEventListener('click', (e) => {
+      const link = e.target.closest('.news-link');
+      if (link) setHorse(parseInt(link.dataset.id, 10));
+    });
+    $('newsList').addEventListener('keydown', (e) => {
+      const link = e.target.closest('.news-link');
+      if (link && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setHorse(parseInt(link.dataset.id, 10)); }
     });
     $('betTypes').addEventListener('click', (e) => {
       const t = e.target.closest('.bet-type');

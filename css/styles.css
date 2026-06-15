@@ -96,6 +96,8 @@ body {
   min-height: 0;
 }
 .center-col, .side-col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+/* On short screens the wallet + news can exceed the column height — let it scroll as a unit */
+.side-col { overflow-y: auto; padding-right: 4px; }
 .center-col { min-width: 0; }
 
 /* ---------------- Panels ---------------- */
@@ -151,18 +153,22 @@ body {
   font-size: 13.5px; font-weight: 700; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px;
 }
+.hc-news-chip { display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 5px; margin-left: 4px; vertical-align: middle; }
+.hc-news-chip.good { color: var(--green); background: rgba(58,209,126,.15); }
+.hc-news-chip.bad  { color: var(--red);   background: rgba(255,93,108,.15); }
 .hc-stats { display: flex; flex-direction: column; gap: 4px; }
-.stat-row { display: grid; grid-template-columns: 22px 1fr; align-items: center; gap: 6px; }
-.stat-key { font-size: 9.5px; color: var(--txt-dim); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+.stat-row { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 6px; }
+.stat-key { font-size: 10px; color: var(--txt-dim); letter-spacing: .3px; font-weight: 700; }
 .bar { height: 6px; border-radius: 3px; background: var(--bar-track); overflow: hidden; }
 .bar > span { display: block; height: 100%; border-radius: 3px; }
 .bar.speed   > span { background: linear-gradient(90deg, #4d7cfe, #6f9bff); }
 .bar.stamina > span { background: linear-gradient(90deg, #2fae6a, #44d27f); }
-.hc-meta { display: flex; gap: 8px; margin-top: 6px; font-size: 10.5px; color: var(--txt-mid); }
+.hc-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 6px; font-size: 10.5px; color: var(--txt-mid); }
 .hc-meta .pref { display: inline-flex; align-items: center; gap: 3px; }
 .hc-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
-.hc-odds {
-  font-size: 15px; font-weight: 800; color: var(--gold);
+/* Canonical odds chip — one design used across the whole app */
+.hc-odds, .bc-odds, .ov-results li:not(.res-head) .od {
+  font-size: 14px; font-weight: 800; color: var(--gold);
   background: rgba(245,197,24,.1); padding: 2px 8px; border-radius: 7px;
   white-space: nowrap;
 }
@@ -195,11 +201,7 @@ body {
 .bc-top { display: flex; align-items: center; gap: 6px; }
 .bc-dot { width: 13px; height: 13px; border-radius: 4px; flex: 0 0 auto; }
 .bc-num { font-size: 11px; font-weight: 800; color: var(--txt-mid); }
-.bc-odds {
-  font-size: 14px; font-weight: 800; color: var(--gold);
-  background: rgba(245,197,24,.1); padding: 2px 8px; border-radius: 7px;
-  white-space: nowrap; flex: 0 0 auto;
-}
+.bc-odds { flex: 0 0 auto; }
 
 .bet-controls { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
 .control-block { display: flex; flex-direction: column; gap: 8px; }
@@ -366,7 +368,9 @@ body {
   transition: opacity .25s;
 }
 .track-overlay.hidden { opacity: 0; pointer-events: none; }
-.overlay-inner { text-align: center; padding: 24px; max-width: 460px; }
+.overlay-inner { text-align: center; padding: 24px; max-width: 460px; max-height: 100%; overflow-y: auto; }
+.ov-gameover { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+.ov-go-title { font-size: 20px; font-weight: 800; color: var(--red); margin-bottom: 4px; }
 .ov-emoji { font-size: 44px; }
 .ov-title { font-size: 24px; font-weight: 800; margin: 6px 0 4px; }
 .ov-title.win  { color: var(--green); }
@@ -392,7 +396,8 @@ body {
 }
 .ov-results .rk { font-weight: 800; color: var(--gold); text-align: right; }
 .ov-results .dot { width: 12px; height: 12px; border-radius: 3px; }
-.ov-results .od { font-size: 12px; color: var(--txt-dim); text-align: right; }
+.ov-results .od { justify-self: end; }
+.ov-results .res-head .od { font-size: 10px; color: var(--txt-dim); font-weight: 700; background: none; padding: 0; }
 .ov-results .hn em { font-style: normal; color: var(--gold); font-size: 11px; font-weight: 700; }
 .ov-results .mine { color: var(--txt); font-weight: 700; }
 .ov-results .res-head {
@@ -409,11 +414,11 @@ body {
 .wallet-panel { flex: 0 0 auto; }
 .wallet-body { display: flex; flex-direction: column; gap: 12px; }
 .balance {
-  display: flex; align-items: baseline; justify-content: space-between;
+  display: flex; flex-direction: column; gap: 2px;
   padding: 6px 14px 14px; border-bottom: 1px solid var(--line-soft);
 }
-.balance-label { font-size: 12px; color: var(--txt-mid); font-weight: 600; }
-.balance-value { font-size: 30px; font-weight: 800; letter-spacing: .5px; }
+.balance-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--txt-dim); font-weight: 700; }
+.balance-value { font-size: 28px; font-weight: 800; letter-spacing: .3px; line-height: 1.1; white-space: nowrap; }
 .balance-value.flash-up   { animation: flashUp .6s; }
 .balance-value.flash-down { animation: flashDown .6s; }
 @keyframes flashUp   { 0%{ color: var(--green); transform: scale(1.12);} 100%{ color: var(--txt); transform: scale(1);} }
@@ -429,13 +434,45 @@ body {
 .wstat-value.gain { color: var(--green); }
 .wstat-value.loss { color: var(--red); }
 
-/* ---------------- Weather panel ---------------- */
-.weather-panel { flex: 0 0 auto; }
-.weather-body { display: flex; flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
-.weather-icon { font-size: 34px; line-height: 1; flex: 0 0 auto; }
-.weather-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.weather-name { font-size: 16px; font-weight: 800; }
-.weather-note { font-size: 11.5px; color: var(--txt-mid); line-height: 1.35; }
+/* ---------------- Daily News (newspaper) panel ---------------- */
+.news-panel { flex: 0 0 auto; }
+.news-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
+
+.news-weather { display: flex; flex-direction: row; align-items: center; gap: 12px; flex: 0 0 auto; }
+.weather-icon { font-size: 30px; line-height: 1; flex: 0 0 auto; }
+.weather-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.weather-name { font-size: 15px; font-weight: 800; }
+.weather-note { font-size: 11px; color: var(--txt-mid); line-height: 1.35; }
+
+.news-divider { height: 1px; background: var(--line-soft); margin: 0 -2px; flex: 0 0 auto; }
+
+.news-list { display: flex; flex-direction: column; gap: 8px; }
+.news-item {
+  display: flex; flex-direction: column; gap: 5px; text-align: left;
+  padding: 10px 12px;
+  background: var(--panel-2); border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--line); border-radius: var(--radius-sm);
+}
+.news-item.good { border-left-color: var(--green); }
+.news-item.bad  { border-left-color: var(--red); }
+.news-tag {
+  align-self: flex-start; font-size: 9.5px; font-weight: 800; letter-spacing: .4px;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 6px;
+}
+.news-tag.good { color: var(--green); background: rgba(58,209,126,.12); }
+.news-tag.bad  { color: var(--red);   background: rgba(255,93,108,.12); }
+.news-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px; line-height: 1.4; color: var(--txt); font-weight: 500;
+}
+.news-link {
+  color: var(--accent-2); font-weight: 700; cursor: pointer;
+  text-decoration: underline; text-decoration-style: dotted;
+  text-underline-offset: 2px; transition: .14s; border-radius: 3px;
+}
+.news-link:hover { color: #9bbcff; text-decoration-style: solid; }
+.news-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.news-empty { font-size: 12px; color: var(--txt-dim); font-style: italic; padding: 4px 2px; }
 
 /* ---------------- Help modal ---------------- */
 .modal-scrim {
