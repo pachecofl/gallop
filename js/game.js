@@ -201,14 +201,11 @@
     </svg>`;
   }
 
-  function coatDot(coat) {
-    return `<span class="bc-dot" style="background:${coat}"></span>`;
-  }
-
-  /* ---------------- Rendering: horse rail ---------------- */
-  function renderHorses() {
-    const list = $('horsesList');
-    list.innerHTML = S.stable.map((h) => {
+  /* ---------------- Rendering: the field (fused horses + betting) ----------------
+     One selectable card per horse — full form info doubles as the bet selector. */
+  function renderField() {
+    const grid = $('betGrid');
+    grid.innerHTML = S.stable.map((h) => {
       const sel = S.sel.horseId === h.id ? ' selected' : '';
       const form = h.lastFinish ? `Last: ${ordinal(h.lastFinish)}` : 'First run';
       const news = (S.news || []).find((n) => n.horseId === h.id);
@@ -216,7 +213,7 @@
         ? ` <span class="hc-news-chip ${news.tone}" title="In today's news">${news.tone === 'good' ? '▲' : '▼'}</span>`
         : '';
       return `
-      <div class="horse-card${sel}" data-id="${h.id}">
+      <button class="horse-card${sel}" data-id="${h.id}">
         <div class="hc-num" style="background:${h.coat};color:${pickText(h.coat)}">${h.id}</div>
         <div class="hc-main">
           <div class="hc-name">${h.name}${newsChip}</div>
@@ -233,7 +230,7 @@
           <div class="hc-odds">${h.odds}/1</div>
           <div class="hc-form">${form}</div>
         </div>
-      </div>`;
+      </button>`;
     }).join('');
   }
 
@@ -246,22 +243,6 @@
   function ordinal(n) {
     const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
-
-  /* ---------------- Rendering: betting grid ---------------- */
-  function renderBetGrid() {
-    const grid = $('betGrid');
-    grid.innerHTML = S.stable.map((h) => {
-      const sel = S.sel.horseId === h.id ? ' selected' : '';
-      return `
-      <button class="bet-cell${sel}" data-id="${h.id}">
-        <div class="bc-main">
-          <div class="bc-name">${h.name}</div>
-          <div class="bc-top">${coatDot(h.coat)}<span class="bc-num">#${h.id}</span></div>
-        </div>
-        <div class="bc-odds">${h.odds}/1</div>
-      </button>`;
-    }).join('');
   }
 
   /* ---------------- Rendering: wallet + weather ---------------- */
@@ -334,8 +315,7 @@
   function setHorse(id) {
     if (S.phase !== 'betting') return;
     S.sel.horseId = id;
-    renderHorses();
-    renderBetGrid();
+    renderField();
     updateSummary();
     blip(520, 0.05);
   }
@@ -593,12 +573,11 @@
     buildLanes();
     applyWeatherFx();
     idleOverlay();
-    renderHorses();
-    renderBetGrid();
+    renderField();
     renderWeather();
     clampStake();
     updateSummary();
-    $('bettingSub').textContent = 'Pick a horse, pick a bet';
+    $('bettingSub').textContent = 'Pick one, then place your bet';
     $('trackSub').textContent = 'Awaiting the off…';
   }
 
@@ -617,7 +596,7 @@
 
   /* ---------------- Controls lock ---------------- */
   function lockControls(locked) {
-    document.querySelectorAll('.bet-cell, .horse-card, .bet-type, .chip, #stakeInput')
+    document.querySelectorAll('.horse-card, .bet-type, .chip, #stakeInput')
       .forEach((el) => { el.style.pointerEvents = locked ? 'none' : ''; el.style.opacity = locked ? '.55' : ''; });
     $('betBtn').disabled = locked;
   }
@@ -729,13 +708,9 @@
      EVENTS
      ============================================================ */
   function bindEvents() {
-    $('horsesList').addEventListener('click', (e) => {
+    $('betGrid').addEventListener('click', (e) => {
       const card = e.target.closest('.horse-card');
       if (card) setHorse(parseInt(card.dataset.id, 10));
-    });
-    $('betGrid').addEventListener('click', (e) => {
-      const cell = e.target.closest('.bet-cell');
-      if (cell) setHorse(parseInt(cell.dataset.id, 10));
     });
     $('newsList').addEventListener('click', (e) => {
       const link = e.target.closest('.news-link');
@@ -780,14 +755,13 @@
     buildLanes();
     buildCrowd();
     applyWeatherFx();
-    renderHorses();
-    renderBetGrid();
+    renderField();
     renderWeather();
     renderWallet();
     clampStake();
     updateSummary();
     idleOverlay();
-    $('bettingSub').textContent = 'Pick a horse, pick a bet';
+    $('bettingSub').textContent = 'Pick one, then place your bet';
     $('trackSub').textContent = 'Awaiting the off…';
   }
 
