@@ -197,7 +197,6 @@ body {
 .bet-actionbar { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
 @media (max-width: 1023px) { .bet-actionbar { grid-template-columns: 1fr; } }
 
-.bet-controls { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
 .control-block { display: flex; flex-direction: column; gap: 8px; }
 .control-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--txt-dim); font-weight: 700; }
 .bet-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -212,7 +211,9 @@ body {
 .bt-name { font-size: 13px; font-weight: 700; }
 .bt-desc { font-size: 10px; color: var(--txt-dim); }
 
-.stake-row { display: flex; flex-direction: column; gap: 8px; }
+.stake-row { display: flex; flex-direction: row; align-items: stretch; gap: 8px; }
+.stake-row .stake-input { flex: 1; }
+.stake-row .bet-btn { flex: 0 0 auto; }
 .stake-input {
   display: flex; align-items: center; gap: 4px;
   background: var(--panel-2); border: 1px solid var(--line-soft);
@@ -226,18 +227,23 @@ body {
 }
 .stake-input input::-webkit-outer-spin-button,
 .stake-input input::-webkit-inner-spin-button { -webkit-appearance: none; }
-.chips { display: flex; gap: 6px; }
 .chip {
-  flex: 1; padding: 7px 4px; cursor: pointer; transition: .14s;
+  padding: 8px 14px; cursor: pointer; transition: .14s;
   background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 8px;
   color: var(--txt-mid); font-size: 11px; font-weight: 700; font-family: inherit;
 }
 .chip:hover { border-color: var(--accent); color: var(--txt); }
 .chip-max { color: var(--gold); border-color: rgba(245,197,24,.35); }
 
-/* Bet summary + button */
+/* "To return" line under the stake input (took the +5/+25/+100 slot) */
+.stake-return { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.stake-return-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--txt-dim); font-weight: 700; }
+.stake-return .sum-value { font-size: 16px; }
+.stake-return .chip-max { margin-left: auto; flex: 0 0 auto; }
+
+/* Selection bar — only visible while a race is running (panel collapsed) */
 .bet-summary {
-  display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: center;
+  display: none; align-items: baseline; gap: 28px;
   padding: 12px 14px; border-radius: var(--radius-sm);
   background: var(--bg-2); border: 1px solid var(--line-soft);
 }
@@ -256,18 +262,18 @@ body {
 .bet-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(245,197,24,.35); }
 .bet-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; filter: grayscale(.4); }
 
-/* Collapsed state during a race / result — show only the selection */
+/* During a race the panel collapses: hide the field + controls and show the
+   locked selection bar (horse #, name, bet type, and potential return). */
 .betting-panel.collapsed .bet-grid,
-.betting-panel.collapsed .bet-controls,
-.betting-panel.collapsed .ret-line,
-.betting-panel.collapsed .bet-btn { display: none; }
+.betting-panel.collapsed .bet-type-block,
+.betting-panel.collapsed .stake-block { display: none; }
 .betting-panel.collapsed .betting-body { gap: 0; }
 .betting-panel.collapsed .bet-actionbar { grid-template-columns: 1fr; }
-.betting-panel.collapsed .bet-summary {
-  grid-template-columns: auto 1fr; align-items: center;
-}
-.betting-panel.collapsed .sel-line { flex-direction: row; align-items: baseline; gap: 8px; }
-.betting-panel.collapsed .sel-line .sum-value { font-size: 16px; }
+.betting-panel.collapsed .bet-summary { display: flex; flex-direction: row; flex-wrap: wrap; }
+.betting-panel.collapsed .sel-line,
+.betting-panel.collapsed .ret-line { flex-direction: row; align-items: baseline; gap: 8px; }
+.betting-panel.collapsed .sel-line .sum-value,
+.betting-panel.collapsed .ret-line .sum-value { font-size: 16px; }
 
 /* ---------------- Track ---------------- */
 .track-panel { flex: 1 1 auto; }
@@ -527,11 +533,8 @@ body {
   .side-col { flex-direction: column; }   /* wallet + news stack */
   .track-panel { min-height: 360px; }
 
-  /* Betting: rich cards stay full-width & readable on phones
-     (base minmax(215px) → 1 col on small phones, 2 on large); stack controls */
-  .bet-controls { grid-template-columns: 1fr; gap: 14px; }
-  .bet-summary { grid-template-columns: 1fr; gap: 12px; text-align: left; }
-  .bet-summary .bet-btn { width: 100%; }
+  /* Betting: stack the stake input + Place bet full-width on phones */
+  .stake-row { flex-direction: column; align-items: stretch; }
 
   /* Bigger touch targets (≥44px) */
   .icon-btn { width: 44px; height: 44px; }

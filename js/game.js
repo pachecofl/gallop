@@ -296,11 +296,13 @@
     const stake = clamp(Math.floor(S.sel.stake || 0), 0, S.balance);
     const typeLabel = { win: 'Win', place: 'Place', show: 'Show' }[S.sel.type];
 
-    $('sumSelection').textContent = h ? `${h.name} · ${typeLabel}` : '—';
+    $('sumSelection').textContent = h ? `#${h.id} ${h.name} · ${typeLabel}` : '—';
 
     let ret = 0;
     if (h && stake >= MIN_BET) ret = stake + stake * payoutMultiplier(h.odds, S.sel.type);
-    $('sumReturn').textContent = money(ret);
+    const retStr = money(ret);
+    $('sumReturn').textContent = retStr;
+    $('sumPrize').textContent = retStr;
 
     const valid = !!h && stake >= MIN_BET && stake <= S.balance && S.phase === 'betting';
     const btn = $('betBtn');
@@ -724,11 +726,9 @@
       const t = e.target.closest('.bet-type');
       if (t && S.phase === 'betting') { S.sel.type = t.dataset.type; updateSummary(); blip(620, 0.05); }
     });
-    $('chips').addEventListener('click', (e) => {
-      const c = e.target.closest('.chip');
-      if (!c || S.phase !== 'betting') return;
-      if (c.dataset.amt === 'max') S.sel.stake = S.balance;
-      else S.sel.stake = clamp((parseInt($('stakeInput').value, 10) || 0) + parseInt(c.dataset.amt, 10), 0, S.balance);
+    $('allInBtn').addEventListener('click', () => {
+      if (S.phase !== 'betting') return;
+      S.sel.stake = S.balance;
       clampStake(); updateSummary(); blip(700, 0.04);
     });
     $('stakeInput').addEventListener('input', (e) => {

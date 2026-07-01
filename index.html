@@ -46,8 +46,7 @@
             <div class="bet-grid" id="betGrid"><!-- 10 selectable horse cards --></div>
 
             <div class="bet-actionbar">
-            <div class="bet-controls">
-              <div class="control-block">
+              <div class="control-block bet-type-block">
                 <label class="control-label">Bet type</label>
                 <div class="bet-types" id="betTypes">
                   <button class="bet-type" data-type="win"   data-frac="1/1">
@@ -62,34 +61,33 @@
                 </div>
               </div>
 
-              <div class="control-block">
+              <div class="control-block stake-block">
                 <label class="control-label">Stake</label>
                 <div class="stake-row">
                   <div class="stake-input">
                     <span class="stake-cur">$</span>
                     <input type="number" id="stakeInput" min="1" step="1" value="10" inputmode="numeric" />
                   </div>
-                  <div class="chips" id="chips">
-                    <button class="chip" data-amt="5">+5</button>
-                    <button class="chip" data-amt="25">+25</button>
-                    <button class="chip" data-amt="100">+100</button>
-                    <button class="chip chip-max" data-amt="max">All in</button>
-                  </div>
+                  <button class="bet-btn" id="betBtn" disabled>Place bet</button>
+                </div>
+                <div class="stake-return">
+                  <span class="stake-return-label">To return</span>
+                  <span class="sum-value win" id="sumReturn">$0</span>
+                  <button class="chip chip-max" id="allInBtn" data-amt="max">All in</button>
                 </div>
               </div>
-            </div>
 
-            <div class="bet-summary" id="betSummary">
-              <div class="summary-line sel-line">
-                <span class="sum-label">Selection</span>
-                <span class="sum-value" id="sumSelection">—</span>
+              <!-- Shown only while a race is running (panel collapsed) -->
+              <div class="bet-summary" id="betSummary">
+                <div class="summary-line sel-line">
+                  <span class="sum-label">Selection</span>
+                  <span class="sum-value" id="sumSelection">—</span>
+                </div>
+                <div class="summary-line ret-line">
+                  <span class="sum-label">To return</span>
+                  <span class="sum-value win" id="sumPrize">$0</span>
+                </div>
               </div>
-              <div class="summary-line ret-line">
-                <span class="sum-label">To return</span>
-                <span class="sum-value win" id="sumReturn">$0</span>
-              </div>
-              <button class="bet-btn" id="betBtn" disabled>Place bet</button>
-            </div>
             </div>
           </div>
         </section>
