@@ -137,6 +137,8 @@ body {
   cursor: pointer;
   transition: .15s;
   position: relative;
+  /* query container so the stat bars can respond to the card's own width */
+  container-type: inline-size;
 }
 .horse-card:hover { border-color: var(--accent); transform: translateY(-1px); }
 .horse-card.selected {
@@ -158,7 +160,11 @@ body {
 .hc-news-chip { display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 5px; margin-left: 4px; vertical-align: middle; }
 .hc-news-chip.good { color: var(--green); background: rgba(58,209,126,.15); }
 .hc-news-chip.bad  { color: var(--red);   background: rgba(255,93,108,.15); }
-.hc-stats { display: flex; flex-direction: column; gap: 4px; }
+/* Bars stack full-width by default; sit side by side once the card is wide enough */
+.hc-stats { display: grid; grid-template-columns: 1fr; gap: 4px 12px; }
+@container (min-width: 300px) {
+  .hc-stats { grid-template-columns: 1fr 1fr; }
+}
 .stat-row { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 6px; }
 .stat-key { font-size: 10px; color: var(--txt-dim); letter-spacing: .3px; font-weight: 700; }
 .bar { height: 6px; border-radius: 3px; background: var(--bar-track); overflow: hidden; }
@@ -174,6 +180,7 @@ body {
   background: rgba(245,197,24,.1); padding: 2px 8px; border-radius: 7px;
   white-space: nowrap;
 }
+.hc-odds { font-size: 12px; }   /* smaller on the field cards */
 .hc-form { font-size: 10px; color: var(--txt-dim); }
 
 /* ---------------- Betting ---------------- */
@@ -181,9 +188,14 @@ body {
 .betting-body { display: flex; flex-direction: column; gap: 14px; }
 .bet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
   gap: 8px;
 }
+
+/* Desktop: bet-type + stake share a row with the selection/return/Place bet
+   summary, so everything sits on one compact line. Stacks below 1024. */
+.bet-actionbar { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+@media (max-width: 1023px) { .bet-actionbar { grid-template-columns: 1fr; } }
 
 .bet-controls { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
 .control-block { display: flex; flex-direction: column; gap: 8px; }
@@ -250,6 +262,7 @@ body {
 .betting-panel.collapsed .ret-line,
 .betting-panel.collapsed .bet-btn { display: none; }
 .betting-panel.collapsed .betting-body { gap: 0; }
+.betting-panel.collapsed .bet-actionbar { grid-template-columns: 1fr; }
 .betting-panel.collapsed .bet-summary {
   grid-template-columns: auto 1fr; align-items: center;
 }
