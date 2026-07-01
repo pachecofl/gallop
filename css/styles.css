@@ -277,9 +277,11 @@ body {
 
 /* ---------------- Track ---------------- */
 .track-panel { flex: 1 1 auto; }
-.track-body { padding: 0; }
+/* fill the body via absolute inset rather than height:100% so the track
+   renders even when the app has no definite height (mobile stacked layout) */
+.track-body { padding: 0; position: relative; }
 .track {
-  position: relative; width: 100%; height: 100%;
+  position: absolute; inset: 0;
   border-radius: 0 0 var(--radius) var(--radius);
   overflow: hidden;
 }
@@ -512,33 +514,42 @@ body {
    (iPad landscape 1024 → 2-col, portrait 768 → stacked).
    ============================================================ */
 
-/* --- TABLET & DOWN: ≤768px → single column ---
-   Sidebar (wallet + news) drops below the action column;
-   on tablet the two sit side by side to use the width. --- */
+/* --- TABLET & DOWN: ≤768px → single column, sidebar ABOVE the track ---
+   Unwrap the center column so betting, the wallet/news sidebar, and the
+   track can be ordered independently: betting → wallet/news → track. --- */
 @media (max-width: 768px) {
   body { overflow: auto; }
   .app { height: auto; min-height: 100vh; min-height: 100svh; padding: 12px; }
 
-  .layout { grid-template-columns: 1fr; }
-  .side-col { overflow: visible; padding-right: 0; flex-direction: row; align-items: stretch; }
-  .side-col > .panel { flex: 1 1 0; min-width: 0; }
-
-  .track-panel { min-height: 440px; }
+  .layout { display: flex; flex-direction: column; }
+  .center-col { display: contents; }        /* betting + track become layout items */
+  .betting-panel { order: 1; }
+  .side-col     { order: 2; overflow: visible; padding-right: 0; }
+  .track-panel  { order: 3; min-height: 440px; }
 }
 
-/* --- MOBILE: ≤639px → tighten + stack the sidebar --- */
+/* --- TABLET ONLY (640–768): wallet + news side by side --- */
+@media (min-width: 640px) and (max-width: 768px) {
+  .side-col { flex-direction: row; align-items: stretch; }
+  .side-col > .panel { flex: 1 1 0; min-width: 0; }
+}
+
+/* --- MOBILE: ≤639px → tighten; wallet + news stack at natural height --- */
 @media (max-width: 639px) {
   .app { padding: 10px; gap: 10px; }
   .layout { gap: 10px; }
-  .side-col { flex-direction: column; }   /* wallet + news stack */
+  .side-col { flex-direction: column; }   /* natural height — avoids flex-basis collapse */
   .track-panel { min-height: 360px; }
+
+  /* Once the bet is placed (panel collapsed), the track fills the screen */
+  .betting-panel.collapsed ~ .track-panel { order: 0; min-height: calc(100svh - 120px); }
 
   /* Betting: stack the stake input + Place bet full-width on phones */
   .stake-row { flex-direction: column; align-items: stretch; }
 
   /* Bigger touch targets (≥44px) */
   .icon-btn { width: 44px; height: 44px; }
-  .chip { padding: 10px 4px; }
+  .chip { padding: 10px 16px; }
 
   /* Tighter panel padding to reclaim space */
   .panel-body { padding: 12px; }

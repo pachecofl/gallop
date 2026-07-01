@@ -411,6 +411,8 @@
     document.querySelector('.betting-panel').classList.add('collapsed');
     lockControls(true);
     hideOverlay();
+    // on mobile the track becomes full-height — bring it into view
+    $('track').scrollIntoView({ behavior: 'smooth', block: 'start' });
     ensureAudio();
     startCrowdLoop();
     runRace(h);
