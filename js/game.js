@@ -216,7 +216,10 @@
       <button class="horse-card${sel}" data-id="${h.id}">
         <div class="hc-num" style="background:${h.coat};color:${pickText(h.coat)}">${h.id}</div>
         <div class="hc-main">
-          <div class="hc-name">${h.name}${newsChip}</div>
+          <div class="hc-head">
+            <div class="hc-name">${h.name}${newsChip}</div>
+            <div class="hc-odds">${h.odds}/1</div>
+          </div>
           <div class="hc-stats">
             <div class="stat-row"><span class="stat-key">Speed</span><div class="bar speed"><span style="width:${h.speed/5*100}%"></span></div></div>
             <div class="stat-row"><span class="stat-key">Stamina</span><div class="bar stamina"><span style="width:${h.stamina/5*100}%"></span></div></div>
@@ -224,11 +227,8 @@
           <div class="hc-meta">
             <span>${h.age}yo</span>
             <span class="pref">${h.weatherPrefs.map((k) => WEATHERS[k].name).join(' | ')}</span>
+            <span class="hc-form">${form}</span>
           </div>
-        </div>
-        <div class="hc-right">
-          <div class="hc-odds">${h.odds}/1</div>
-          <div class="hc-form">${form}</div>
         </div>
       </button>`;
     }).join('');
